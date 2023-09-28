@@ -13,13 +13,21 @@
     enableCors: true
     id: rest-ab14
     post:
-      - path: '{exchange_name}'
+      - path: '{exchange_name}/{key_name}'
         to: direct:sendmessage
         consumes: application/json
         produces: application/json
         bindingMode: 'off'
         enableCors: true
         id: post-fa88
+- beans:
+    - name: RabbitMQConnectionFactory
+      properties:
+        host: '{{rabbitmq.host}}'
+        port: '5672'
+        username: '{{rabbitmq.username}}'
+        password: '{{rabbitmq.password}}'
+      type: org.springframework.amqp.rabbit.connection.CachingConnectionFactory
 - route:
     id: sendmessage
     from:
@@ -42,15 +50,8 @@
               exchangeName: ${header.exchange_name}
               connectionFactory: '#bean:RabbitMQConnectionFactory'
               disableReplyTo: true
+              routingKey: ${header.key_name}
         - log:
             message: ${header.exchange_name}
             logName: ExchangeName
             id: log-14d7
-- beans:
-    - name: RabbitMQConnectionFactory
-      properties:
-        host: '{{rabbitmq.host}}'
-        port: '5672'
-        username: '{{rabbitmq.username}}'
-        password: '{{rabbitmq.password}}'
-      type: org.springframework.amqp.rabbit.connection.CachingConnectionFactory
